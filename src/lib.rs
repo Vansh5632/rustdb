@@ -3,7 +3,7 @@ pub mod schema;
 mod storage;
 
 pub use error::{DbError, SchemaError};
-pub use schema::Schema;
+pub use schema::{Schema, CompileTimeSchema};
 use storage::LsmStorage;
 use std::path::Path;
 use serde::{Serialize, de::DeserializeOwned};

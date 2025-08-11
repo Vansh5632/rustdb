@@ -15,5 +15,8 @@ pub enum DbError{
 #[derive(Error,Debug)]
 pub enum SchemaError{
     #[error("Index field '{0}' cannot be empty")]
-    IndexFieldEmpty(String)
+    IndexFieldEmpty(String),
+    
+    #[error("Validation error: {0}")]
+    ValidationError(String),
 }
