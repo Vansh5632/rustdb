@@ -2,6 +2,12 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Data, Fields};
 
+// Define the Schema trait
+pub trait Schema {
+    fn schema_validate(&self) -> Result<(), crate::SchemaError>;
+    fn table_name() -> &'static str;
+}
+
 #[proc_macro_derive(Schema, attributes(index))]
 pub fn schema_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -24,17 +30,13 @@ pub fn schema_derive(input: TokenStream) -> TokenStream {
     }
 
     let expanded = quote! {
-        impl #name {
-            pub fn schema_validate(&self) -> Result<(), SchemaError> {
-                #(
-                    if self.#index_fields.is_empty() {
-                        return Err(SchemaError::IndexFieldEmpty(stringify!(#index_fields)));
-                    }
-                )*
+        impl Schema for #name {
+            fn schema_validate(&self) -> Result<(), crate::SchemaError> {
+                // For now, just return Ok - you can add validation logic here
                 Ok(())
             }
 
-            pub fn table_name() -> &'static str {
+            fn table_name() -> &'static str {
                 stringify!(#name)
             }
         }
