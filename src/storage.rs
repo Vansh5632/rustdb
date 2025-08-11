@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use std::fs::{File, OpenOptions};
-use std::io::{self, BufWriter, Write};
+use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
@@ -11,7 +11,7 @@ use crate::error::DbError;
 
 /// WAL operation enum: represents what gets logged
 #[derive(Debug, Serialize, Deserialize)]
-enum StorageOp {
+pub(crate) enum StorageOp {
     Insert(Vec<u8>, Vec<u8>),
     Delete(Vec<u8>),
 }
@@ -19,6 +19,14 @@ enum StorageOp {
 /// Write-Ahead Log
 pub struct Wal {
     writer: BufWriter<File>,
+}
+
+impl std::fmt::Debug for Wal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Wal")
+            .field("writer", &"BufWriter<File>")
+            .finish()
+    }
 }
 
 impl Wal {
@@ -32,7 +40,7 @@ impl Wal {
         })
     }
 
-    pub fn write(&mut self, op: &StorageOp) -> Result<(), DbError> {
+    pub(crate) fn write(&mut self, op: &StorageOp) -> Result<(), DbError> {
         bincode::serialize_into(&mut self.writer, op)
             .map_err(|e| DbError::SerializationError(e.to_string()))?;
         self.writer.flush()?;
@@ -41,6 +49,7 @@ impl Wal {
 }
 
 /// In-memory table
+#[derive(Debug)]
 pub struct MemTable {
     data: BTreeMap<Vec<u8>, Vec<u8>>,
     size: usize,
@@ -69,6 +78,7 @@ impl MemTable {
 }
 
 /// Main LSM storage engine
+#[derive(Debug)]
 pub struct LsmStorage {
     memtable: Arc<RwLock<MemTable>>,
     wal: RwLock<Wal>,

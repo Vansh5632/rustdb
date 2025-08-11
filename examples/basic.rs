@@ -1,16 +1,24 @@
-use std::result;
-
 use rust_db::{Database,Schema,DbError};
 use serde::{Serialize,Deserialize};
 
-#[derive(Debug,Serialize,Deserialize,Schema)]
-
+#[derive(Debug,Serialize,Deserialize)]
 struct User{
-    #[index]
+    #[allow(dead_code)]
     id:u64,
     name:String,
     email:String,
     age:u32,
+}
+
+impl Schema for User {
+    fn schema_validate(&self) -> Result<(), rust_db::SchemaError> {
+        // Add validation logic here if needed
+        Ok(())
+    }
+    
+    fn table_name() -> &'static str {
+        "User"
+    }
 }
 
 #[tokio::main]
@@ -30,7 +38,7 @@ async fn main()-> Result<(),DbError>{
     println!("inserted user: {:?}", user);
     let results = db.query::<User>().filter(|u| u.age>25).execute().await?;
 
-    println!("users over 25: {:?}",result);
+    println!("users over 25: {:?}",results);
 
     Ok(())
 }

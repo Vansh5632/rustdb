@@ -480,11 +480,8 @@ dependencies = [
  "log",
  "memmap",
  "pretty_env_logger",
- "proc-macro2",
- "quote",
  "serde",
  "serde_json",
- "syn",
  "thiserror",
  "tokio",
 ]

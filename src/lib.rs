@@ -1,12 +1,11 @@
 mod error;
-mod schema;
+pub mod schema;
 mod storage;
 
 pub use error::{DbError, SchemaError};
 pub use schema::Schema;
 use storage::LsmStorage;
 use std::path::Path;
-use async_trait::async_trait;
 use serde::{Serialize, de::DeserializeOwned};
 use tokio::sync::RwLock;
 
@@ -31,12 +30,12 @@ impl Database {
         item.schema_validate().map_err(|e| DbError::SchemaError(e.to_string()))?;
         
         // Serialize
-        let key = item.table_name().as_bytes().to_vec();
+        let key = T::table_name().as_bytes().to_vec();
         let value = bincode::serialize(item)
             .map_err(|e| DbError::SerializationError(e.to_string()))?;
         
         // Store
-        self.storage.write().await.put(key, value)?;
+        self.storage.write().await.insert(key, value)?;
         Ok(())
     }
 
@@ -52,6 +51,13 @@ impl Database {
         } else {
             Ok(None)
         }
+    }
+
+    pub fn query<T>(&self) -> QueryBuilder<T>
+    where
+        T: Schema + DeserializeOwned + Send + Sync,
+    {
+        QueryBuilder::new(self)
     }
 }
 
